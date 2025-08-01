@@ -1,5 +1,5 @@
 const express = require('express');
-const scrape = require('./scraper');
+const scrape = require('./scraper.mjs');
 
 const app = express();
 app.use(express.json());
