@@ -1,5 +1,5 @@
 import express from 'express';
-import scrapeShoprite from './scraper.js';
+import scrapeShoprite from './scraper';
 
 const app = express();
 app.use(express.json());
