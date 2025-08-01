@@ -1,27 +1,31 @@
-const { chromium } = require('playwright');
+import { chromium } from 'playwright';
 
-async function scrape(keyword, searchURL) {
+export async function scrapeSite(keyword, searchURL) {
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage();
 
   try {
-    await page.goto(searchURL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    console.log(`[INFO] Navigating to ${searchURL}`);
+    await page.goto(searchURL, { waitUntil: 'domcontentloaded', timeout: 60000 });
 
-    const items = await page.$$eval('[data-automation-id="product-card"]', (cards) =>
-      cards.map(card => {
-        const name = card.querySelector('[data-automation-id="product-title"]')?.innerText?.trim();
-        const price = card.querySelector('[data-automation-id="product-price"]')?.innerText?.trim();
-        const image = card.querySelector('img')?.src;
-        return { name, price, image };
+    // Wait for product tiles to load
+    await page.waitForSelector('[data-auto="product-tile"]', { timeout: 10000 });
+
+    const products = await page.$$eval('[data-auto="product-tile"]', items =>
+      items.map(item => {
+        const name = item.querySelector('[data-auto="product-title"]')?.innerText.trim() || 'No name';
+        const price = item.querySelector('[data-auto="product-price"]')?.innerText.trim() || 'No price';
+        const image = item.querySelector('img')?.src || '';
+        const link = item.querySelector('a')?.href || '';
+        return { name, price, image, link };
       })
     );
 
+    return products;
+  } catch (error) {
+    console.error('[ERROR] Scraping failed:', error);
+    throw new Error('Scraping failed: ' + error.message);
+  } finally {
     await browser.close();
-    return items.filter(item => item.name && item.price);
-  } catch (err) {
-    await browser.close();
-    throw err;
   }
 }
-
-module.exports = scrape;
