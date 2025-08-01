@@ -1,6 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import scrapeSite from './scraper.js';
+import scrapeSite from './scraper.mjs';
 import cors from 'cors';
 
 const app = express();
